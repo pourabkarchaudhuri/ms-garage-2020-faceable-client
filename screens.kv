@@ -1,0 +1,220 @@
+#:kivy 1.11.1
+
+<WindowManager>:
+    SplashScreen:
+    WFHScreen:
+    NoCamera:
+    InternetCheck:
+    OTPWindow:
+    OpenCVScreen:
+    ApprovalPendingScreen:
+
+
+<SplashScreen>:
+    Image:
+        source: 'static/faceable_logo.png'
+    Label:
+        text:'Faceable'
+        font_size:'40sp'
+        pos:(0,-100)
+    Label:
+        text:'Just you, and nobody else'
+        font_context:'C:\Windows\Fonts' 
+        family_name:'Corbel'
+        font_size:'20sp'
+        pos:(0,-150)
+
+<WFHScreen>:
+    Label:
+        id: 'wfhscreen_text1' 
+        text:"Verifying Machine"
+        font_context:'C:\Windows\Fonts' 
+        font_family:'Candara'
+        halign: 'center'
+        valign: 'middle'
+        padding:(30,1)
+        text_size: self.size
+        font_size:'50sp'
+        pos:(0,0)
+    Image:
+        id:'wfh_loading_img'
+        source:'static/loading.gif'
+        pos:(-240,0)
+        anim_delay: 0
+        mipmap:True
+        
+<InternetCheck>:
+    Label:
+        text: "No internet connection"
+        # #halign: 'left'
+        # #valign: 'middle'
+        # #padding:(20,20)
+        # text_size: self.size
+        # font_size:'60sp'
+        # pos:(100,350)
+        halign: 'center'
+        valign: 'middle'
+        padding:(30,1)
+        text_size: self.size
+        font_size:'50sp'
+        pos:(0,0)
+
+
+<OTPWindow>:
+    name: "OTPWindow"
+    emp_id: emp_id
+    otp_cont : otp_cont
+    Label:
+        text:"Couldn't recognize user, need verification"
+        halign: 'center'
+        valign: 'middle'
+        padding:(30,1)
+        text_size: self.size
+        font_size:'50sp'
+        pos:(0,250)
+    TextInput:
+        id: emp_id
+        font_size: '50sp'
+        multiline: False
+        pos_hint: {"x":0.1, "top":0.7}
+        size_hint: 0.4, 0.1
+        hint_text: "Employee ID"
+    Label:
+        id : 'otp_sent_status'
+        text : ""
+        color: (.9,.9,.9,1)
+        font_size : "20sp"
+        pos: (-253,60)
+    Label:
+        id : 'emp_id_invalid'
+        text : ""
+        color: (.9,.9,.9,1)
+        font_size : "20sp"
+        pos: (-267,60)
+    Button:
+        id:'send_otp'
+        background_normal: ''
+        pos_hint: {"x": 0.6 , "top":0.7}
+        size_hint: 0.3, 0.1
+        font_size: '50sp'
+        text: "Resend OTP" if root.isSent else "Send OTP"
+        background_color:(.0, .3, .9, .1)
+        on_press : root.send_otp()
+        on_press : self.background_color=(1,1,1,1)
+        on_release : self.background_color=(.0,.3,.9,.1)
+        canvas.before:
+            Color:
+                rgba: 1, 1, 1, 1
+            Line:
+                width: 2.0
+                rectangle: self.x, self.y, self.width, self.height
+    TextInput:
+        id: otp_cont
+        font_size: '50sp'
+        multiline: False
+        pos_hint: {"x":0.1, "top":0.5}
+        size_hint: 0.4, 0.1
+        hint_text: "OTP"
+    Label:
+        id : 'otp_invalid'
+        text : ""
+        color: (.9,.9,.9,1)
+        font_size : "20sp"
+        pos: (-300,-100)
+    
+    Button:
+        id: 'verify_otp'
+        background_normal: ''
+        pos_hint: {"x": 0.6, "top":0.5}
+        size_hint: 0.3, 0.1
+        font_size: '50sp'
+        text: "Verify OTP"
+        background_color:(.0, .3, .9, .1)
+        on_press : root.verify_otp()
+        on_press : self.background_color=(1,1,1,1)
+        on_release : self.background_color=(.0,.3,.9,.1)
+        canvas.before:
+            Color:
+                rgba: 1, 1, 1, 1
+            Line:
+                width: 2.0
+                rectangle: self.x, self.y, self.width, self.height
+
+<OpenCVScreen>:
+    BoxLayout:   
+        Image:
+            id : 'open_cv_image'
+            source: 'static/black.png'
+            nocache: True
+
+    Label:
+        id:'opencv_status'
+        halign: 'center'
+        valign: 'middle'
+        padding:(30,1)
+        text_size: self.size
+        font_size:'30sp'
+        pos:(0,-350)
+
+<TrainingScreen>:
+    Label:
+        text:"Training in process"
+        halign: 'center'
+        valign: 'middle'
+        padding:(30,1)
+        text_size: self.size
+        font_size:'50sp'
+        pos:(0,0)
+    Image:
+        source:'static/loading.gif'
+        pos:(-240,0)
+        anim_delay: 0
+        mipmap:True
+
+<ApprovalPendingScreen>:
+    Label:
+        id :'approval_pending_text1'
+        text:""
+        halign: 'center'
+        valign: 'middle'
+        padding:(30,1)
+        text_size: self.size
+        font_size:'50sp'
+        pos:(0,0)
+        
+    Button:
+        id: 'start_over_btn'
+        text:'Start Over'
+        opacity:0
+        # pos:(350,100) 
+        # size_hint:(.25, .18)
+        pos_hint: {"x": 0.4 , "top":0.4}
+        size_hint: 0.2, 0.1
+        background_color:(.0, .3, .9, .0)
+        font_size:'20sp'
+        on_press: root.start_over()
+        on_press : self.background_color=(1,1,1,1)
+        on_release : self.background_color=(.0,.3,.9,.0)
+        canvas.before:
+            Color:
+                rgba: 1, 1, 1, 1
+            Line:
+                width: 2
+                rectangle: self.x, self.y, self.width, self.height
+    #Label:
+        #id : 'approval_pending'
+        #text:'Approval pending'
+
+<NoCamera>:
+    Label:
+        text: "No camera has been detected"
+        text_size: self.size
+        font_size:'50sp'
+        pos:(0,0)
+        halign: 'center'
+        valign: 'middle'
+        padding:(30,1)
+        text_size: self.size
+        
+
+
