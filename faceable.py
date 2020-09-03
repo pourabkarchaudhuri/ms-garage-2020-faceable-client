@@ -256,7 +256,7 @@ class OpenCVScreen(Screen):
         self.LABEL_ENCODER_PATH = os.path.join(self.OUTPUT_DIR, 'le.pickle')
         self.EMBEDDING_MODEL_PATH = os.path.join(self.CURRENT_DIR, 'openface_nn4.small2.v1.t7')
         self.LOG_FILE_PATH = os.path.join(self.CURRENT_DIR, 'log', 'app.log')
-        self.GLOBAL_FACE_DETECTION_THRESHOLD = 0.4
+        self.GLOBAL_FACE_DETECTION_THRESHOLD = 0.7
         #self.GLOBAL_FACE_RECOGNITION_ACCURACY_THRESHOLD = 1.75
         self.GLOBAL_TRIGGER_DELAY = 3
 
@@ -510,7 +510,7 @@ class OpenCVScreen(Screen):
                 recognition_count = Counter(self.recognition_result)
                 self.accuracy = recognition_count[1] / len(self.recognition_result)
                 #print("Accuracy " + format(self.accuracy))
-                if (self.accuracy > 0.70):
+                if (self.accuracy > 0.50):
                     #print(format(self.recognition_result))
                     self.recognition_result.clear()
                     #delete_output_folder('events/')
