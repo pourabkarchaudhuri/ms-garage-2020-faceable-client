@@ -4,13 +4,16 @@ import base64
 import datetime
 import time
 import os
-from dotenv import load_dotenv
-load_dotenv()
-SEND_MAIL_URL = os.getenv('SEND_MAIL_URL')
-BEARER_TOKEN = os.getenv('BEARER_TOKEN')
+from services import keys
+# from dotenv import load_dotenv
+# load_dotenv()
+# SEND_MAIL_URL = os.getenv('SEND_MAIL_URL')
+# BEARER_TOKEN = os.getenv('BEARER_TOKEN')
 
 def send_approval_mail(publicIP,macAddress,hostName,image,empId):
     try:
+        SEND_MAIL_URL = keys.get_send_mail_url()['SEND_MAIL_URL']
+        BEARER_TOKEN = keys.get_bearer_token()['BEARER_TOKEN']
         ts = time.time()
         utc_time = datetime.datetime.utcfromtimestamp(ts).strftime('%Y-%m-%dT%H:%M:%S')
 

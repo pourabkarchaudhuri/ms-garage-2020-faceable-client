@@ -4,9 +4,12 @@ from kivy.app import App
 from kivy.config import Config
 Config.set('kivy', 'window_icon', 'static/faceable_logo.png')
 Config.set('input', 'mouse', 'mouse,multitouch_on_demand')
-Config.set('graphics', 'width', '1024')
-Config.set('graphics', 'height', '768')
+Config.set('graphics', 'width', '640')
+Config.set('graphics', 'height', '480')
 Config.set('graphics', 'resizable', False)
+#Config.set('graphics', 'window_state', 'hidden')
+#Config.set('graphics', 'borderless', '1')
+#Config.set('kivy', 'exit_on_escape', '0')
 from kivy.lang import Builder
 from kivy.uix.screenmanager import ScreenManager, Screen
 from kivy.uix.popup import Popup
@@ -37,6 +40,14 @@ import ctypes
 import sys
 from collections import Counter
 from kivy.cache import Cache
+import subprocess
+# from pystray import Icon as icon, Menu as menu, MenuItem as item
+# from PIL import Image, ImageDraw, ImageFont
+# import time
+# from threading import Thread
+import time
+import win32gui
+import win32con
 
 #Window.clearcolor = (.0, .3, .9, 0)
 Window.clearcolor = (.0,0.6,0.9,0)
@@ -51,21 +62,21 @@ def create_folder_if_not_present(path):
     else:
         pass
 
-def delete_or_create_events_folder(path):
-    folder = path
-    dir = os.path.dirname(path)  #if it doesn't exist this function will create
-    if not os.path.exists(dir):
-        os.makedirs(dir)
-    else:
-        for filename in os.listdir(folder):
-            file_path = os.path.join(folder, filename)
-            try:
-                if os.path.isfile(file_path) or os.path.islink(file_path):
-                    os.unlink(file_path)
-                elif os.path.isdir(file_path):
-                    shutil.rmtree(file_path)
-            except Exception as e:
-                print('Failed to delete %s. Reason: %s' % (file_path, e))
+# def delete_or_create_events_folder(path):
+#     folder = path
+#     dir = os.path.dirname(path)  #if it doesn't exist this function will create
+#     if not os.path.exists(dir):
+#         os.makedirs(dir)
+#     else:
+#         for filename in os.listdir(folder):
+#             file_path = os.path.join(folder, filename)
+#             try:
+#                 if os.path.isfile(file_path) or os.path.islink(file_path):
+#                     os.unlink(file_path)
+#                 elif os.path.isdir(file_path):
+#                     shutil.rmtree(file_path)
+#             except Exception as e:
+#                 print('Failed to delete %s. Reason: %s' % (file_path, e))
 
 
 #function to confirm whether the given path exists or not
@@ -94,7 +105,26 @@ def delete_output_folder(path):
 class SplashScreen(Screen):
     def on_enter(self, *args):
         #print("on Enter Splash Screen")
-        Clock.schedule_once(self.initial_req_check, 3)
+        #Clock.schedule_once(self.initial_req_check, 3)
+        # Clock.schedule_interval(self.is_user_logged_in, 10)
+        Clock.schedule_once(self.move_to_lock_screen_status, 3)
+    
+    # def is_user_logged_in(self, dt):
+    #     process_name='LogonUI.exe'
+    #     callall='TASKLIST'
+    #     outputall=subprocess.check_output(callall)
+    #     outputstringall=str(outputall)
+    #     if process_name in outputstringall:
+    #         Cache.append('cache','is_locked', True)
+    #         print("Locked.")
+    #     else: 
+    #         Cache.append('cache','is_locked', False)
+    #         print("Unlocked.")
+    #         self.manager.current='lock_screen_status'
+
+    def move_to_lock_screen_status(self, dt):
+        self.manager.current='lock_screen_status'
+
 
     def initial_req_check(self, dt):
         is_there_internet = checkInternetSocket()
@@ -121,7 +151,7 @@ class InternetCheck(Screen):
 class WFHScreen(Screen):
     def on_enter(self):
         create_folder_if_not_present("Output/")
-        delete_or_create_events_folder('events/')
+        #delete_or_create_events_folder('events/')
         #create_folder_if_not_present("events/")
         self.is_status_active = False
         #print("WFH Screen")
@@ -143,6 +173,7 @@ class WFHScreen(Screen):
             #print("My IP : " + my_ip)
             Cache.append('cache','ip',my_ip)
         wfh_service_error, wfh_status_response = wfh.check_status(HOSTNAME)
+        #print(format(wfh_status_response))
         if(wfh_service_error is not None):
             print("Error in service : ", wfh_service_error)
         else:
@@ -154,6 +185,7 @@ class WFHScreen(Screen):
                 #self.approval_pending = True
                 ###Test ends #####
                 self.is_status_active = wfh_status_response['data']['isActive']
+                #print(self.is_status_active+" approved")
                 self.registered_public_ip = wfh_status_response['data']['publicIP']
                 self.isApproved = wfh_status_response['data']['isApproved']
                 self.approval_pending = not(self.isApproved)
@@ -169,11 +201,11 @@ class WFHScreen(Screen):
                 self.wfh_loading_img.opacity=0
                 self.wfh_loading_img.reload()
                 #self.wfh_text_2.text = ""
-                #Clock.schedule_once(self.wfh_not_approved, 10)
+                Clock.schedule_once(self.wfh_not_approved, 10)
         
-    #def wfh_not_approved(self, dt):
-        # ctypes.windll.user32.LockWorkStation()
-        # Faceable().stop()
+    def wfh_not_approved(self, dt):
+        ctypes.windll.user32.LockWorkStation()
+        Faceable().stop()
             
             #lockscreen
 
@@ -187,7 +219,11 @@ class OpenCVScreen(Screen):
         #print("OpenCV Screen")
         #print(format(self.ids))
         #image = self.ids["'open_cv_image'"]
-        self.from_flow_cache = Cache.get('cache','from_flow')
+        self.from_flow_cache = Cache.get('cache', 'from_flow')
+        
+
+        # notepad_handle = ctypes.windll.user32.FindWindowW(u"Faceable", None) 
+        # ctypes.windll.user32.ShowWindow(notepad_handle, 6)  
 
         if (self.from_flow_cache == "continuous_recognition"):
             #print("Switching to Continuous recognition")
@@ -205,7 +241,8 @@ class OpenCVScreen(Screen):
         self.HOSTNAME = socket.gethostname()
         self.my_ip = Cache.get('cache','ip')
         self.recog_count = 0
-        self.recognition_result=[]
+        self.recognition_result = []
+        self.no_detection = 0
         self.no_face_detection_pop = Popup(title='No faces detected',
                   content=Label(text='Please make sure only your face is cleary visible before the camera'), auto_dismiss=True,
                   size_hint=(None, None), size=(500, 500))
@@ -219,8 +256,8 @@ class OpenCVScreen(Screen):
         self.LABEL_ENCODER_PATH = os.path.join(self.OUTPUT_DIR, 'le.pickle')
         self.EMBEDDING_MODEL_PATH = os.path.join(self.CURRENT_DIR, 'openface_nn4.small2.v1.t7')
         self.LOG_FILE_PATH = os.path.join(self.CURRENT_DIR, 'log', 'app.log')
-        self.GLOBAL_FACE_DETECTION_THRESHOLD = 0.5
-        self.GLOBAL_FACE_RECOGNITION_ACCURACY_THRESHOLD = 1.75
+        self.GLOBAL_FACE_DETECTION_THRESHOLD = 0.4
+        #self.GLOBAL_FACE_RECOGNITION_ACCURACY_THRESHOLD = 1.75
         self.GLOBAL_TRIGGER_DELAY = 3
 
         # load our serialized face detector from disk
@@ -256,6 +293,9 @@ class OpenCVScreen(Screen):
         time.sleep(1)
         if (self.from_flow_cache == "continuous_recognition"):
             #print("Moving to continuous recognition on update")
+            time.sleep(2)
+            Minimize = win32gui.FindWindow('SDL_app','Faceable')
+            win32gui.ShowWindow(Minimize, win32con.SW_MINIMIZE)
             Clock.schedule_interval(self.continuous_recognition_on_update, 1)
         else:
             self.recognition_clock = Clock.schedule_interval(self.update_recognition, 1.0 / 33.0)
@@ -278,6 +318,7 @@ class OpenCVScreen(Screen):
         # faces in the input image
         self.detector.setInput(imageBlob)
         self.detections = self.detector.forward()
+
 
         # loop over the detections
         for i in range(0, self.detections.shape[2]):
@@ -328,20 +369,21 @@ class OpenCVScreen(Screen):
                     #cv2.imwrite("events/"+ self.HOSTNAME +"/user." + str(1) + '.' + str(self.recog_count) + ".jpg", frame)
                     #cv2.imwrite(os.path.join(os.getcwd()+'/events',"user."+str(1)+'.'+str(self.recog_count)+".jpg"),face)
                 self.frame_num += 1
+                self.no_detection=0
                 #frame_num_temp += 1
                 if (name == 'unknown'):
                     self.recognition_result.append(0)
                     #print("Stranger Detected")
                     cv2.rectangle(frame, (startX, startY), (endX, endY),(0, 0, 255), 2)
                     cv2.putText(frame, text, (startX, y), cv2.FONT_HERSHEY_SIMPLEX, 0.5, (0, 0, 255), 1)
-                    cv2.imwrite(os.path.join(os.getcwd()+'/events',"stranger."+str(1)+'.'+str(self.recog_count)+".jpg"),face)
+                    #cv2.imwrite(os.path.join(os.getcwd()+'/events',"stranger."+str(1)+'.'+str(self.recog_count)+".jpg"),face)
                     #cv2.putText(frame, 'Stranger Frame Count: {0}'.format(self.counter_wrong), (10, frame.shape[0]-80), cv2.FONT_HERSHEY_SIMPLEX, 0.5, (0, 255, 0), 1)
                     #self.counter_wrong += 1
                     #self.counter_correct = 0
                 else:
                     self.recognition_result.append(1)
                     #print("Host Detected")
-                    cv2.imwrite(os.path.join(os.getcwd()+'/events',"user."+str(1)+'.'+str(self.recog_count)+".jpg"),face)
+                    #cv2.imwrite(os.path.join(os.getcwd()+'/events',"user."+str(1)+'.'+str(self.recog_count)+".jpg"),face)
                     cv2.rectangle(frame, (startX, startY), (endX, endY),(0, 255, 0), 2)
                     cv2.putText(frame, text, (startX, y),cv2.FONT_HERSHEY_SIMPLEX, 0.5, (0, 255, 0), 1)
                     #cv2.putText(frame, 'Host Frame Count: {0}'.format(self.counter_correct), (10, frame.shape[0]-80), cv2.FONT_HERSHEY_SIMPLEX, 0.5, (0, 255, 0), 1)
@@ -359,7 +401,10 @@ class OpenCVScreen(Screen):
             self.total_faces = self.no_of_faces + self.total_faces
             #cv2.imwrite(os.getcwd()+"dataset/Stranger"+"/event.jpg", frame)
             ##print("Lock the screen")
-        #elif (self.no_of_faces == 0):
+        elif (self.no_of_faces == 0):
+            self.no_detection += 1
+            #self.recognition_result.append(2)
+            pass
             #print("No of faces " + format(self.no_of_faces))
             #cv2.imwrite("dataset/Stranger/event.jpg", frame)
 
@@ -389,11 +434,37 @@ class OpenCVScreen(Screen):
         # display image from the texture
         self.image.texture = texture1
         #print("Frame count " + format(self.frame_num))
+        #print("No detection count"+format(self.no_detection))
+
+        # if self.frame_num % 30 == 0:
+        #     recognition_count = Counter(self.recognition_result)
+        #     recogniton_count = recognition_count[2]
+        #     if (recognition_count == 30):
+                # ctypes.windll.user32.LockWorkStation()
+                # self.vs.stream.release()
+                # cv2.destroyAllWindows()
+                # self.recognition_result.clear()
+        if(self.no_detection==30):
+                ctypes.windll.user32.LockWorkStation()
+                self.vs.stream.release()
+                cv2.destroyAllWindows()
+                self.recognition_result.clear()
+                Faceable().stop()
+        
         if self.frame_num % 10 == 0:
             #self.HOSTNAME = socket.gethostname()
             ##print(self.count)
+            #if (self.total_faces == 0):
+                # ctypes.windll.user32.LockWorkStation()
+                # self.vs.stream.release()
+                # cv2.destroyAllWindows()
+                # self.recognition_result.clear()
+                # #delete_output_folder('events/')
+                # Faceable().stop()
+            
             if (self.total_faces / 10 > 1):
-                event_image_path = "events/"
+                #print(len(recognition_result))
+                #event_image_path = "events/"
                 #print("Locking the screen - Too many faces in 10 consecutive frames")
                 # logging_failure_event_error, logging_failure_event_body = logs.log_failure_event(self.my_ip,mac_address,self.HOSTNAME, "More than 1 face detected in 10 consecutive frames", event_image_path)
                 # if (logging_failure_event_error is not None):
@@ -413,7 +484,7 @@ class OpenCVScreen(Screen):
                 else:
                     #print(format(ip_info))
                     #print(ip_info["ip"])
-                    logging_failure_event_error,logging_failure_event_body = logs.log_failure_event(ip_info["ip"], self.HOSTNAME , ip_info["city"], ip_info["region"], ip_info["country"], ip_info["org"], ip_info["loc"], "multi_unrecognized", "events/")
+                    logging_failure_event_error,logging_failure_event_body = logs.log_failure_event(ip_info["ip"], self.HOSTNAME , ip_info["city"], ip_info["region"], ip_info["country"], ip_info["org"], ip_info["loc"], "multi_unrecognized")
                     if (logging_failure_event_error is not None):
                         print("Failure in logging the failure event (more than one face)")
                     else:
@@ -423,30 +494,36 @@ class OpenCVScreen(Screen):
                             self.vs.stream.release()
                             cv2.destroyAllWindows()
                             self.recognition_result.clear()
-                            delete_output_folder('events/')
+                            #delete_output_folder('events/')
                             Faceable().stop()
             if (len(self.recognition_result) == 0):
                 #print("Recognition result is empty")
                 # delete_output_folder('events/')
+                # ctypes.windll.user32.LockWorkStation()
+                # self.vs.stream.release()
+                # cv2.destroyAllWindows()
+                # self.recognition_result.clear()
+                # #delete_output_folder('events/')
+                # Faceable().stop()
                 pass
             else:
                 recognition_count = Counter(self.recognition_result)
                 self.accuracy = recognition_count[1] / len(self.recognition_result)
                 #print("Accuracy " + format(self.accuracy))
                 if (self.accuracy > 0.70):
-                    print(format(self.recognition_result))
+                    #print(format(self.recognition_result))
                     self.recognition_result.clear()
                     #delete_output_folder('events/')
                 else:
                     #print("Accuracy failed for 10 consecutive frames - Locking Screen")
-                    event_image_path = "events/"
+                    #event_image_path = "events/"
                     ip__info_error, ip_info = ip.get_ip_info()
                     if ip__info_error is not None:
                         print("IP info error"+str(ip__info_error))
                     else:
                         #print(format(ip_info))
                         #print(ip_info["ip"])
-                        logging_failure_event_error,logging_failure_event_body = logs.log_failure_event(ip_info["ip"], self.HOSTNAME , ip_info["city"], ip_info["region"], ip_info["country"], ip_info["org"], ip_info["loc"], "single_unrecognized", "events/")
+                        logging_failure_event_error,logging_failure_event_body = logs.log_failure_event(ip_info["ip"], self.HOSTNAME , ip_info["city"], ip_info["region"], ip_info["country"], ip_info["org"], ip_info["loc"], "single_unrecognized")
                         if (logging_failure_event_error is not None):
                             print("Failure in logging the failure event (single_unrecognized)")
                         else:
@@ -470,7 +547,7 @@ class OpenCVScreen(Screen):
                     #         cv2.destroyAllWindows()
                     #         self.recognition_result.clear()
                     #         Faceable().stop()
-            delete_output_folder("events/")
+            #delete_output_folder("events/")
 
     def update_recognition(self, dt):
         self.image = self.ids["'open_cv_image'"]
@@ -906,7 +983,7 @@ class TrainingScreen(Screen):
 
     def checking_for_local_training_neccessity(self,dt):
         if (self.accuracy < GLOBAL_THRESHOLD):
-            delete_output_folder("Output/")
+            #delete_output_folder("Output/")
             #Cache.remove('cache', 'from_flow')
             #Cache.append('cache','from_flow','from')
             #self.manager.current = "opencv_screen"
@@ -1029,17 +1106,72 @@ class ApprovalPendingScreen(Screen):
 
 class NoCamera(Screen):
     def on_enter(self, *args):
-        Clock.schedule_once(self.no_camera_lock_kill_app,7)
+        # Clock.schedule_once(self.no_camera_lock_kill_app,7)
+        pass
     
     def no_camera_lock_kill_app(self, dt):
             ctypes.windll.user32.LockWorkStation()
             Faceable().stop()
+    
+class LockScreenStatus(Screen):
+    def on_enter(self):
+        #print("Inside on_enter of LockScreenStatus")
+        # Clock.schedule_once(self.set_status_screen,1)
+        self.is_user_logged_in_clock = Clock.schedule_interval(self.is_user_logged_in, 10)
+    
+    def set_status_screen(self,dt):
+        self.lock_screen_status = self.ids["'lock_screen_status'"]
+        is_locked = Cache.get('cache', 'is_locked')
+        if (is_locked):
+            #print("Is system locked"+format(is_locked))
+            self.lock_screen_status.text= 'Windows is locked'
+        else:
+            #print("Is system locked"+format(is_locked))
+            self.lock_screen_status.text= 'Windows is unlocked.Moving to the next step'
+            self.is_user_logged_in_clock.cancel()
+            Clock.schedule_once(self.initial_req_check, 1)
+    
+    def is_user_logged_in(self, dt):
+        process_name='LogonUI.exe'
+        callall='TASKLIST'
+        outputall=subprocess.check_output(callall)
+        outputstringall=str(outputall)
+        if process_name in outputstringall:
+            Cache.append('cache','is_locked', True)
+            #print("Locked.")
+            Clock.schedule_once(self.set_status_screen,1)
+        else: 
+            Cache.append('cache','is_locked', False)
+            #print("Unlocked.")
+            self.manager.current='lock_screen_status'
+            Clock.schedule_once(self.set_status_screen,1)
+
+    def initial_req_check(self, dt):
+        is_there_internet = checkInternetSocket()
+        cam_present = is_cam_present(0)
+        if(cam_present):
+            #print("Camera present")
+            if is_there_internet:
+                #print("Connected to the internet" )
+                self.manager.current = "wfh"
+            else:
+                #print("No internet")
+                self.manager.current= "No internet"
+        else:
+            #print("No camera detected")
+            self.manager.current="no_camera"
+        ##print(self.manager.current)
+        ##print(self.manager.next())
+        #self.manager.current = 'wfh'
+
+    
+        
 
 class WindowManager(ScreenManager):
     pass
 
-
 class Faceable(App):
+    visible = False
     def build(self):
         HOSTNAME = socket.gethostname()
         check_path("dataset/" + HOSTNAME + "/")
@@ -1055,45 +1187,21 @@ class Faceable(App):
         sm.add_widget(TrainingScreen(name="training_screen"))
         sm.add_widget(InternetCheck(name="No internet"))
         sm.add_widget(NoCamera(name="no_camera"))
-        #IPaddress=socket.gethostbyname(socket.gethostname())
-        ##print(IPaddress)
-        # is_there_internet = checkInternetSocket()
-        # cam_present = is_cam_present(0)
-        # if(cam_present):
-        #     #print("Camera present")
-        #     if is_there_internet:
-        #         # #print("No internet, your localhost is ")#+ IPaddress)
-        #         # sm.add_widget(InternetCheck(name="No internet. Check your internet connection"))
-        #         # sm.current= "No internet. Check your internet connection"
-        #         #print("Connected, with the IP address: " )#+ IPaddress)
-        #         sm.add_widget(WFHScreen(name="wfh"))
-        #         sm.add_widget(ApprovalPendingScreen(name="Approval pending"))
-        #         sm.add_widget(OpenCVScreen(name="opencv_screen"))
-        #         sm.add_widget(OTPWindow(name="Send OTP"))
-        #         sm.add_widget(TrainingScreen(name="training_screen"))
-        #         sm.current = "splash"
-        #     else:
-        #         #print("No internet")#+ IPaddress)
-        #         sm.add_widget(InternetCheck(name="No internet"))
-        #         sm.current= "No internet"
-        # else:
-        #     #print("No camera detected")
-        #     sm.add_widget(NoCamera(name="no_camera"))
-        #     sm.current="no_camera"
-            #return sm
+        sm.add_widget(LockScreenStatus(name="lock_screen_status"))
+        return sm
+    
+    def on_start(self):
+        self.root.focus = True    
+
+    def alternate(self):
+        if self.visible:
+            self.root.get_root_window().hide()
+        else:
+            self.root.get_root_window().show()
+
+        self.visible = not self.visible
 
         
-            # #print("Connected, with the IP address: " )#+ IPaddress)
-            # sm.add_widget(WFHScreen(name="wfh"))
-            # sm.add_widget(ApprovalPendingScreen(name="Approval pending"))
-            # sm.add_widget(OpenCVScreen(name="opencv_screen"))
-            # sm.add_widget(OTPWindow(name="Send OTP"))
-            # sm.add_widget(TrainingScreen(name="training_screen"))
-            # sm.current = "splash"
-        return sm
-    # def on_stop(self):
-    #     #without this, app will not exit even if the window is closed
-    #     self.capture.release()
 def checkInternetSocket(host="8.8.8.8", port=53, timeout=3):
     try:
         socket.setdefaulttimeout(timeout)
@@ -1115,5 +1223,11 @@ def is_cam_present(source):
 
 if __name__ == '__main__':
     Faceable().run()
-    
-    #cv2.destroyAllWindows()
+    # ma = Faceable()       
+    # kivy_app = Thread(target=ma.run)
+    # kivy_app.start()
+    # my_menu = menu(item(text="Show Main Window", action=ma.alternate, default = True, visible=False))
+    # image = Image.open("static/faceable_logo.png")
+    # icon = icon('EasyBright', image, menu=my_menu)
+    # icon.run()
+

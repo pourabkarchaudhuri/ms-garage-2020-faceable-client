@@ -8,6 +8,7 @@
     OTPWindow:
     OpenCVScreen:
     ApprovalPendingScreen:
+    LockScreenStatus:
 
 
 <SplashScreen>:
@@ -24,6 +25,15 @@
         font_size:'20sp'
         pos:(0,-150)
 
+<LockScreenStatus>:
+    Label:
+        id:'lock_screen_status'
+        text:'Checking the status of Windows'
+        font_size:'28sp'
+        pos:(0,-10)
+        
+
+
 <WFHScreen>:
     Label:
         id: 'wfhscreen_text1' 
@@ -34,18 +44,18 @@
         valign: 'middle'
         padding:(30,1)
         text_size: self.size
-        font_size:'50sp'
+        font_size:'28sp'
         pos:(0,0)
     Image:
         id:'wfh_loading_img'
         source:'static/loading.gif'
-        pos:(-240,0)
+        pos:(0,50)
         anim_delay: 0
         mipmap:True
         
 <InternetCheck>:
     Label:
-        text: "No internet connection"
+        text: "No Internet Connection"
         # #halign: 'left'
         # #valign: 'middle'
         # #padding:(20,20)
@@ -56,7 +66,7 @@
         valign: 'middle'
         padding:(30,1)
         text_size: self.size
-        font_size:'50sp'
+        font_size:'28sp'
         pos:(0,0)
 
 
@@ -70,11 +80,11 @@
         valign: 'middle'
         padding:(30,1)
         text_size: self.size
-        font_size:'50sp'
-        pos:(0,250)
+        font_size:'28sp'
+        pos:(0,150)
     TextInput:
         id: emp_id
-        font_size: '50sp'
+        font_size: '28sp'
         multiline: False
         pos_hint: {"x":0.1, "top":0.7}
         size_hint: 0.4, 0.1
@@ -84,19 +94,19 @@
         text : ""
         color: (.9,.9,.9,1)
         font_size : "20sp"
-        pos: (-253,60)
+        pos: (-100,30)
     Label:
         id : 'emp_id_invalid'
         text : ""
         color: (.9,.9,.9,1)
         font_size : "20sp"
-        pos: (-267,60)
+        pos: (-137,35)
     Button:
         id:'send_otp'
         background_normal: ''
         pos_hint: {"x": 0.6 , "top":0.7}
         size_hint: 0.3, 0.1
-        font_size: '50sp'
+        font_size: '28sp'
         text: "Resend OTP" if root.isSent else "Send OTP"
         background_color:(.0, .3, .9, .1)
         on_press : root.send_otp()
@@ -110,7 +120,7 @@
                 rectangle: self.x, self.y, self.width, self.height
     TextInput:
         id: otp_cont
-        font_size: '50sp'
+        font_size: '28sp'
         multiline: False
         pos_hint: {"x":0.1, "top":0.5}
         size_hint: 0.4, 0.1
@@ -120,14 +130,14 @@
         text : ""
         color: (.9,.9,.9,1)
         font_size : "20sp"
-        pos: (-300,-100)
+        pos: (-149,-60)
     
     Button:
         id: 'verify_otp'
         background_normal: ''
         pos_hint: {"x": 0.6, "top":0.5}
         size_hint: 0.3, 0.1
-        font_size: '50sp'
+        font_size: '28sp'
         text: "Verify OTP"
         background_color:(.0, .3, .9, .1)
         on_press : root.verify_otp()
@@ -163,11 +173,11 @@
         valign: 'middle'
         padding:(30,1)
         text_size: self.size
-        font_size:'50sp'
+        font_size:'28sp'
         pos:(0,0)
     Image:
         source:'static/loading.gif'
-        pos:(-240,0)
+        pos:(0,50)
         anim_delay: 0
         mipmap:True
 
@@ -179,7 +189,7 @@
         valign: 'middle'
         padding:(30,1)
         text_size: self.size
-        font_size:'50sp'
+        font_size:'28sp'
         pos:(0,0)
         
     Button:
@@ -188,10 +198,10 @@
         opacity:0
         # pos:(350,100) 
         # size_hint:(.25, .18)
-        pos_hint: {"x": 0.4 , "top":0.4}
+        pos_hint: {"x": 0.4 , "top":0.3}
         size_hint: 0.2, 0.1
         background_color:(.0, .3, .9, .0)
-        font_size:'20sp'
+        font_size:'15sp'
         on_press: root.start_over()
         on_press : self.background_color=(1,1,1,1)
         on_release : self.background_color=(.0,.3,.9,.0)
@@ -209,7 +219,7 @@
     Label:
         text: "No camera has been detected"
         text_size: self.size
-        font_size:'50sp'
+        font_size:'28sp'
         pos:(0,0)
         halign: 'center'
         valign: 'middle'

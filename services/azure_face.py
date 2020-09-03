@@ -2,16 +2,21 @@ import json
 import base64
 import requests
 import os
-from dotenv import load_dotenv
+from services import keys
+# from dotenv import load_dotenv
+# load_dotenv()
 
-load_dotenv()
-AZURE_FACE_RECOGNIZE_URL = os.getenv('AZURE_FACE_RECOGNIZE_URL')
-AZURE_FACE_RETRAIN_URL = os.getenv('AZURE_FACE_RETRAIN_URL')
-BEARER_TOKEN= os.getenv('BEARER_TOKEN')
+
+# AZURE_FACE_RECOGNIZE_URL = os.getenv('AZURE_FACE_RECOGNIZE_URL')
+# AZURE_FACE_RETRAIN_URL = os.getenv('AZURE_FACE_RETRAIN_URL')
+# BEARER_TOKEN= os.getenv('BEARER_TOKEN')
 
 def recognize(data):
     
      try:
+        AZURE_FACE_RECOGNIZE_URL = keys.get_azure_face_recognize_url()['AZURE_FACE_RECOGNIZE_URL']
+        BEARER_TOKEN = keys.get_bearer_token()['BEARER_TOKEN']
+        
         base64string=""
         with open(data, "rb") as image_file:
             base64string = base64.b64encode(image_file.read())
@@ -38,6 +43,8 @@ def recognize(data):
 
 def retrain(image, emp_id):
      try:
+        AZURE_FACE_RETRAIN_URL = keys.get_azure_face_retrain_url()['AZURE_FACE_RETRAIN_URL']
+        BEARER_TOKEN = keys.get_bearer_token()['BEARER_TOKEN']
         base64string=""
         with open(image, "rb") as image_file:
             base64string = base64.b64encode(image_file.read())

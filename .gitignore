@@ -1,0 +1,13 @@
+dataset/EBII398F1
+Output/embeddings.pickle
+Output/le.pickle
+Output/recognizer.pickle
+__pycache__
+.vscode
+services/__pycache__
+test.py
+payload.txt
+image1.png
+.env
+testcases.txt
+.gitignore
