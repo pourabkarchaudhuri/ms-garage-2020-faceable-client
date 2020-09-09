@@ -107,7 +107,7 @@ class SplashScreen(Screen):
         #print("on Enter Splash Screen")
         #Clock.schedule_once(self.initial_req_check, 3)
         # Clock.schedule_interval(self.is_user_logged_in, 10)
-        Clock.schedule_once(self.move_to_lock_screen_status, 3)
+        Clock.schedule_once(self.initial_req_check, 3)
     
     # def is_user_logged_in(self, dt):
     #     process_name='LogonUI.exe'
@@ -122,8 +122,9 @@ class SplashScreen(Screen):
     #         print("Unlocked.")
     #         self.manager.current='lock_screen_status'
 
-    def move_to_lock_screen_status(self, dt):
-        self.manager.current='lock_screen_status'
+    # def move_to_lock_screen_status(self, dt):
+    #     self.manager.current = 'lock_screen_status'
+        
 
 
     def initial_req_check(self, dt):
@@ -184,9 +185,11 @@ class WFHScreen(Screen):
                 #self.is_status_active = False
                 #self.approval_pending = True
                 ###Test ends #####
+                # machine's wfh status
                 self.is_status_active = wfh_status_response['data']['isActive']
                 #print(self.is_status_active+" approved")
                 self.registered_public_ip = wfh_status_response['data']['publicIP']
+                #employee's wfh status
                 self.isApproved = wfh_status_response['data']['isApproved']
                 self.approval_pending = not(self.isApproved)
                 # #print(format(self.approval_pending) +": approval")
@@ -256,7 +259,7 @@ class OpenCVScreen(Screen):
         self.LABEL_ENCODER_PATH = os.path.join(self.OUTPUT_DIR, 'le.pickle')
         self.EMBEDDING_MODEL_PATH = os.path.join(self.CURRENT_DIR, 'openface_nn4.small2.v1.t7')
         self.LOG_FILE_PATH = os.path.join(self.CURRENT_DIR, 'log', 'app.log')
-        self.GLOBAL_FACE_DETECTION_THRESHOLD = 0.4
+        self.GLOBAL_FACE_DETECTION_THRESHOLD = 0.7
         #self.GLOBAL_FACE_RECOGNITION_ACCURACY_THRESHOLD = 1.75
         self.GLOBAL_TRIGGER_DELAY = 3
 
@@ -489,7 +492,7 @@ class OpenCVScreen(Screen):
                         print("Failure in logging the failure event (more than one face)")
                     else:
                         if(logging_failure_event_body["success"]):
-                            #print("Successfully logged failure event(multi_unrecognized)")
+                            print("Successfully logged failure event(multi_unrecognized)")
                             ctypes.windll.user32.LockWorkStation()
                             self.vs.stream.release()
                             cv2.destroyAllWindows()
@@ -510,7 +513,7 @@ class OpenCVScreen(Screen):
                 recognition_count = Counter(self.recognition_result)
                 self.accuracy = recognition_count[1] / len(self.recognition_result)
                 #print("Accuracy " + format(self.accuracy))
-                if (self.accuracy > 0.70):
+                if (self.accuracy > 0.50):
                     #print(format(self.recognition_result))
                     self.recognition_result.clear()
                     #delete_output_folder('events/')
@@ -525,7 +528,7 @@ class OpenCVScreen(Screen):
                         #print(ip_info["ip"])
                         logging_failure_event_error,logging_failure_event_body = logs.log_failure_event(ip_info["ip"], self.HOSTNAME , ip_info["city"], ip_info["region"], ip_info["country"], ip_info["org"], ip_info["loc"], "single_unrecognized")
                         if (logging_failure_event_error is not None):
-                            print("Failure in logging the failure event (single_unrecognized)")
+                            print("Failure in logging the failure event (single_unrecognized) "+self.accuracy)
                         else:
                             if (logging_failure_event_body["success"]):
                                 #print("Successfully logged failure event(single_unrecognized)")
@@ -1112,7 +1115,10 @@ class NoCamera(Screen):
     def no_camera_lock_kill_app(self, dt):
             ctypes.windll.user32.LockWorkStation()
             Faceable().stop()
-    
+
+
+ #The below class checks if the Windows is locked or not. This can be removed as the application now closes on locking of Windows
+
 class LockScreenStatus(Screen):
     def on_enter(self):
         #print("Inside on_enter of LockScreenStatus")
@@ -1193,13 +1199,13 @@ class Faceable(App):
     def on_start(self):
         self.root.focus = True    
 
-    def alternate(self):
-        if self.visible:
-            self.root.get_root_window().hide()
-        else:
-            self.root.get_root_window().show()
+    # def alternate(self):
+    #     if self.visible:
+    #         self.root.get_root_window().hide()
+    #     else:
+    #         self.root.get_root_window().show()
 
-        self.visible = not self.visible
+    #     self.visible = not self.visible
 
         
 def checkInternetSocket(host="8.8.8.8", port=53, timeout=3):

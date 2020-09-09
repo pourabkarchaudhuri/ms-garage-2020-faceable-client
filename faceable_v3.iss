@@ -55,3 +55,6 @@ Root: "HKLM"; Subkey: "SOFTWARE\Microsoft\Windows NT\CurrentVersion\AppCompatFla
 ;Filename: "{app}\{#MyAppExeName}"; Description: "{cm:LaunchProgram,{#StringChange(MyAppName, '&', '&&')}}"; Flags: runascurrentuser nowait postinstall skipifsilent
 Filename: "{app}\schedule.bat"; Parameters: "install"; Flags: runhidden
 
+[UninstallRun]
+Filename: "{app}\remove.bat"; Flags: runhidden
+
